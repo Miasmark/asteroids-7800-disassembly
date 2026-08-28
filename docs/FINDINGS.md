@@ -558,12 +558,42 @@ Measured across `run-03`'s eight saucers: the score path never fired -- the
 score only reached 2,560 -- while the bias decayed monotonically from `$A1`
 to `$77`, six per saucer, and the last two spawns came up small.
 
-**An honest caveat.** The branch structure is read directly and is not in
-doubt, but six consecutive *large* outcomes at a nominal ~31%-and-falling
-probability is improbable under a uniform generator. So either the PRNG's
-output is not uniform in this context, or something further conditions the
-draw. The direction of the effect and the decaying threshold are
-established; **the exact probability model is not.**
+### The probability model, derived and confirmed
+
+The caveat above is now **retracted**: the model *is* fully derivable from
+the code, and working it out showed the anomaly was mine, not the game's.
+
+First, the PRNG was cleared of suspicion by measurement. It is an additive
+lagged-Fibonacci generator over a 55-entry table, and histogramming 4,027
+of its outputs live shows it **uniform to within about one percentage
+point** across the range, split 51.6/48.4 between halves. Not the culprit.
+
+The fault was a branch I read straight past. Before any draw happens,
+`rom:F588` tests the bias with `BMI` -- so while the bias still has bit 7
+set (`$80` or above) the saucer is **large deterministically, with no
+random draw at all.**
+
+The complete rule:
+
+| Condition | Result |
+|---|---|
+| score's ten-thousands byte >= 2 | small, unconditionally |
+| else bias >= `$80` | **large, deterministically** |
+| else | uniform draw, `P(large) = (floor(bias/2)+1)/256` |
+
+Because the bias is seeded per difficulty and decays 6 per saucer, the
+number of guaranteed-large saucers is roughly `(seed - $80) / 6`. That
+predicts both recordings exactly:
+
+* **Difficulty 1** (seed `$A7`): bias runs `$A1,$9B,$95,$8F,$89,$83` --
+  six spawns all above the line, all observed large -- then `$7D` and `$77`
+  fall below and both drew small at about 24%.
+* **Expert** (seed `$8F`): bias runs `$89,$83` -- two guaranteed large,
+  both observed -- then `$7D`, which drew small.
+
+So "small saucers arrive sooner on Expert" is not a tendency at all. It is
+an arithmetic consequence of the lower seed, and the earlier six-in-a-row
+that looked improbable was simply not random.
 
 ## What's still open
 
