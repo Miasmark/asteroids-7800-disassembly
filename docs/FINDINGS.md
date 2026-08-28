@@ -535,9 +535,43 @@ object system uses -- and skipping itself. The per-axis test folds two
 comparisons into one bit, EORs it with the wrap flag so the sense inverts
 when the box crosses an edge, and rotates the answer into carry.
 
-One consequence worth stating: **the box half-extents are constants**, so
-the hitbox does *not* scale with asteroid size. A large rock and a small one
-present the same collision area.
+**Scope correction.** An earlier version of this section said the fixed box
+means the hitbox "does not scale with asteroid size", stated as though it
+applied to gameplay generally. It does not, and the user caught it from the
+gameplay side: a fixed +/-16 by +/-26 box for shooting would make hits and
+misses feel obviously wrong. `sub_F93C` has exactly **two** callers -- ship
+respawn and hyperspace re-entry -- and both are *spawn-safety* checks, where
+one generous clearance box is the right tool and object size is irrelevant.
+It is never used for shot-versus-rock.
+
+### The real gameplay collision is size-aware
+
+`rom:sub_DABA` is the pairwise test that actually decides hits, in three
+stages. A coarse reject first, on wrapped absolute distance: `|dx|` must be
+under 10 and `|dy|` under 14, or the pair is dropped. Then the size-aware
+part -- the **low nibble of each object's `ObjType`** indexes three extent
+tables, and for each axis the **two objects' extents are summed** and
+compared against the measured separation. A radius-sum test, not a fixed
+box.
+
+| Object | X extent | Y extent |
+|---|---|---|
+| small rock | 2 | 3 |
+| medium rock | 4 | 6 |
+| large rock | 5 | 8 |
+| ship | 3 | 6 |
+| small saucer | 2 | 2 |
+| large saucer | 4 | 3 |
+| shot | 1 | 1 |
+
+So a shot against a large rock is tested at 1+5 across, against a small rock
+at 1+2 -- which is exactly the behaviour the user reasoned must exist.
+
+Two things fall out of this. The extents scale with the sprite widths found
+independently in `dat_C000` (large rocks 3 bytes wide, medium 2, small 1),
+cross-checking both findings. And it explains the **type encoding**: `$10`,
+`$21`, `$32` have low nibbles 0, 1, 2 -- the low nibble *is* the
+collision-size rank.
 
 **Saucer size** is decided at `rom:L_F581`, by two independent paths:
 
