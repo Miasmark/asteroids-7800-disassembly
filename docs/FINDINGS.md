@@ -116,9 +116,10 @@ award by a factor of ten. The family pattern is not a family rule.
 **Live-verified**, not just read off the table: watching both score byte
 ranges across the whole recording, every positive delta was exactly a
 manual value -- +20 (x23), +50 (x40), +100 (x66), +200 (x3) -- with no
-unexplained amounts. The 500 and 1,000 entries are **not** live-confirmed:
-no small saucer and no player-versus-player kill occurred in this
-recording, so those two rest on the table alone.
+unexplained amounts. The remaining two were confirmed later: **1,000** by
+`run-03`'s small saucer, and **500** by `run-06`, a competitive run in
+which a shot destroys the other player's ship (`ObjType[$20]`: `$23` ->
+`$A3`) on the exact award frame. All six values are now confirmed live.
 
 **The shared team score.** The user noted that Team mode displays a shared
 score at top-centre. The bonus-ship code at `rom:DE75` explains it: the BCD
@@ -646,9 +647,12 @@ for hyperspace landing-spot validation and, presumably, for rock-vs-ship
 and shot-vs-rock -- has never been traced. Tractable, and it sits right
 next to work already done.
 
-**The 500-point award** (shooting the other player's ship) is the one score
-entry still unconfirmed live; it needs a competitive two-player run where
-one player actually shoots the other.
+~~**The 500-point award**~~ -- **CONFIRMED** by `run-06`, a competitive
+run recorded for it. Two +500 awards at frames 1528 and 2202 in GameMode 2,
+and at each award frame a shot slot clears while `ObjType[$20]` goes `$23`
+-> `$A3` -- a player ship entering the exploding state. That also locates
+the two player ships at `ObjType` slots `$18` and `$20`. **Every entry in
+the point-value table is now confirmed live.**
 
 **Smaller, well-defined questions:**
 
