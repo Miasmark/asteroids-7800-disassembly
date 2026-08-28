@@ -304,9 +304,29 @@ later in a game -- but that is one run, and no threshold has been tested.
 of every hit -- for asteroid kills and all three saucer kills alike -- i.e.
 the shot is consumed on impact.
 
-**Retracted:** the earlier guess that the eight `$07` slots at `$24`-`$2B`
-were the shot pool. They are present for essentially the entire recording,
-which a shot pool would not be. Their identity is open.
+**Retracted twice, and now settled: there were never any `$07` objects.**
+The user pointed out that if those slots were shots they ought to be
+consumed as shooting continues. Measuring the array's actual extent
+settled it: across a 4,599-frame window, indices `$00`-`$23` hold a valid
+object type on *every single frame*, and index `$24` onward holds one on
+**zero** frames.
+
+So `ObjType` is exactly **36 slots, `$008C`-`$00AF`**. The "eight
+permanently-present `$07` objects" were reads **past the end of the array**
+into unrelated zero-page variables at `$00B0`-`$00B7` that happen to
+contain `$07`. They were never objects; the fact that a few of them changed
+value was ordinary variable activity, not movement. Both the original
+shot-pool guess *and* its first retraction were reasoning about data
+outside the array entirely.
+
+**A bonus: this identifies the hyperspace investigation's mystery byte.**
+`ram_00A5` is `$008C + $19` -- the `ObjType` entry for the dedicated
+*saucer* slot. The test at `rom:D79E` is asking whether a saucer is
+currently on screen (`$FF` = none, and negative), not consulting a "death
+flag". That is exactly why it read `$FF` throughout `run-02`: that
+recording contains no saucers. The hyperspace conclusion is unaffected --
+the ~19.5% re-entry roll was traced through a different path and never
+depended on this byte.
 
 ## What's still open
 
