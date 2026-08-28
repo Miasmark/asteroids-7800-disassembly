@@ -403,8 +403,20 @@ spawner finding no free slot; that exhaustion, plus the small sample,
 explains why the observed extra-fragment rate (2 of 22) sits under the
 nominal 1-in-4.
 
-The Novice single-fragment case is **code-derived only** -- no recording at
-difficulty 0 exists to test it.
+**Novice is now confirmed too.** `run-05` starts by accident at difficulty
+1 and is reset to Novice at frame 1082. Across the Novice portion, every
+one of **39 splits netted +0** -- one rock destroyed, exactly one created.
+The user's description of how that looks on screen is the useful half: the
+rock *"seems to just get smaller with hits rather than becoming 2 smaller
+pieces"*, which is exactly what a single fragment of the next size down
+produces. And the saucer slot, once initialised to `$FF` at frame 160,
+never changes again across the remaining ~6,400 frames -- no saucer is ever
+spawned.
+
+All three fragment counts are therefore **measured, not inferred**: one on
+Novice, two at difficulty 1, and two-plus-an-occasional-third on Expert.
+The only level never recorded is 2 (Advanced), whose behaviour is
+interpolated from the code alone.
 
 **4. Display.** Difficulty is added to a base index before a text call,
 consistent with selecting one of four level-name strings.
