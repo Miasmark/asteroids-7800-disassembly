@@ -200,10 +200,40 @@ it cannot be what decides. The earlier reading was wrong.
 
 **What actually separates them is timing.** Both fatal jumps died exactly
 **172 frames** after the jump; every survived jump completed its whole
-cycle in about **110 frames**. So the fatal ones are the jumps where phase
-3 *ran long*. What ends phase 3 early versus letting it run on is the
-remaining open question -- and it is now a sharp one, with a known
-signature to look for.
+cycle in about **110 frames**.
+
+### Resolved: hyperspace carries a flat ~19.5% death roll
+
+Logging every state transition rather than reading further code showed the
+divergence immediately, and inverted the model: the four safe jumps go
+state 2 -> **0** and never enter phase 3 at all. Phase 3 is not "in
+hyperspace" -- **it is the destruction sequence**.
+
+The decision is made at the end of phase 2, in `rom:L_D83D`, and it is two
+independent things:
+
+1. **A landing spot is drawn at random and *validated*.** Two PRNG calls
+   give an X and a Y; `rom:sub_F93C` then tests the spot. If the test
+   fails, the routine nudges the phase timer back up so the next tick
+   repeats the whole draw -- it **retries until the spot is clear**. So
+   materialising inside a rock is explicitly prevented, and is *not* what
+   kills you.
+2. **Then a separate roll decides whether you live.** With a clear spot in
+   hand, `rom:L_D85F` draws *one more* random byte and compares it against
+   `#$32`. `>= $32` rematerialises normally; `< $32` destroys the ship.
+   That is **50 in 256 -- about 19.5% -- on every re-entry, regardless of
+   what is on screen.**
+
+This is a genuine **manual-versus-ROM divergence**: the manual describes
+hyperspace only as warping "to a random location on screen" and says
+nothing about any risk.
+
+It also matches the user's account. Their run-02 has 7 jumps of which 3
+were fatal, and their own estimate was "clearly less than 92% but higher
+than 0%". Three-of-seven sits above the 19.5% expectation but is
+unremarkable at that sample size -- and notably, their instinct that the
+deaths had nothing to do with collisions was exactly right, for a more
+interesting reason than landing on a rock.
 
 ## What's still open
 
@@ -223,6 +253,9 @@ rather than a blank page:
 * Which award index maps to which object is inferred from the manual's
   values, not observed directly -- a probe tagging the X register at each
   call would settle it.
+* Whether the ~19.5% hyperspace death roll varies with the four difficulty
+  levels -- the constant `#$32` is a literal here, but a difficulty-indexed
+  variant elsewhere has not been ruled out.
 * The four difficulty levels (Novice/Intermediate/Advanced/Expert), and
   the manual's claim that Novice has no saucers and simplified splitting.
 * Everything else about gameplay: rock split behaviour, saucer timing,
