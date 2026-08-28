@@ -456,16 +456,50 @@ Still open within the block: its internal layout, particularly what
 occupies `$E800-$F15D` beyond the first character page, and whether the
 asteroid and ship shapes live here or in `dat_C000`.
 
+## `$C000`: the moving objects, found via the display list
+
+The second large block resisted every static search, and for a good
+reason: **there are zero real absolute references to it anywhere in the
+ROM**, no `LDA #$Cx / STA zp` pointer setup, and no pointer table. (The one
+apparent absolute hit was another mid-instruction false positive -- the
+scanner reading an `ADC`/`CMP` pair's operand bytes as an opcode. That is
+the third time this class of error has turned up here, and the second time
+it briefly looked like a lead.)
+
+The route in was the display list. MARIA's registers are write-only, so
+they have to be caught on the write: tapping them gives `CHARBASE` = `$E0`
+and the display-list pointer `DPPH`/`DPPL` = **`$1A98`**. Walking the DLL
+from there shows per-zone entries whose graphics pointers land squarely
+inside the block -- `$C0E7`, `$C1BB`, `$C200`, `$C6FE`, `$C7FE`, `$CCF7`
+and more, at widths of 1-2 bytes.
+
+So the two big blocks divide the graphics work cleanly:
+
+| Block | Mode | Role |
+|---|---|---|
+| `$E000-$F15D` | character (via `CHARBASE`) | text and a per-zone constant element |
+| `$C000-$CFFF` | **direct** (via display-list pointers) | the moving game objects |
+
+The pointers are computed into a RAM display list every frame and the data
+fetched by MARIA DMA -- which is precisely why no 6502 instruction ever
+names these addresses, and why a CPU read tap sees nothing during play.
+
+**Not decoded: the internal layout.** MARIA direct mode is page-strided --
+an object's rows sit one per page -- so recovering individual sprites needs
+each display-list entry's *own* width and line count, not the zone height.
+Renders at guessed extents produced fragments rather than recognisable
+shapes, and are not being presented as identifications.
+
 ## What's still open
 
 Refreshed after several rounds of work -- a number of the day-one bullets
 here had been resolved and were left standing, which is its own kind of
 error.
 
-**`$C000-$CFFF` (4,096 bytes) is the remaining unknown block.** Its
-sibling `$E000-$F15D` is now identified -- see "The `$E000` block, solved"
-above. `$C000` still resists: it is not CHARBASE-addressed, the glyph-grid
-layout was ruled out on day one, and nothing else has placed it yet.
+**Both large blocks are now identified** -- see "The `$E000` block,
+solved" and "`$C000`: the moving objects" above. What remains is their
+*internal* layout: which bytes are which sprite, and what occupies
+`$E800-$F15D` beyond the first character page.
 
 **Collision detection proper.** The object system, splitting and scoring
 are all mapped, but the actual collision test -- `rom:sub_F93C`, used both
