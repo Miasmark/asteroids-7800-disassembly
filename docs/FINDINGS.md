@@ -367,6 +367,48 @@ Both match the user's account. Not established: the units of
 from it or from a separate rule. The "things move faster" impression is
 also untested -- no object-velocity comparison has been made.
 
+## What difficulty actually controls
+
+Tracing every read of `Difficulty` gives three distinct gameplay effects
+plus a display use -- and confirms a second manual claim from the ROM.
+
+**1. Whether saucers exist at all.** The saucer routine returns immediately
+when difficulty is 0, so Novice never processes one. (Manual: "Novice
+features no saucers.")
+
+**2. How soon saucers arrive.** Difficulty indexes a 4-byte table
+(`$40`/`$60`/`$80`/`$DF`) giving a cap on the `SaucerPressure` accumulator
+that feeds the spawn path. Measured: first saucer at frame 1070 on Expert
+versus 2006 at difficulty 1.
+
+**3. How many fragments an asteroid splits into.** This is the manual's
+"simplified asteroid splitting mechanics" for Novice, and it is a branch on
+difficulty around the fragment spawner:
+
+| Difficulty | Fragments |
+|---|---|
+| 0 Novice | **one** |
+| 1-2 Intermediate / Advanced | **two** |
+| 3 Expert | two, **plus a 1-in-4 chance of a third** |
+
+The fragment *type* is computed arithmetically -- destroyed type minus
+`$91` -- which reproduces every size seen live: `$B2`->`$21`, `$A1`->`$10`,
+and `$90` goes negative so a small asteroid yields nothing.
+
+**Live-confirmed** by counting the net change in live asteroid slots per
+destruction: at difficulty 1, all 18 splits netted **+1** (one destroyed,
+two created). On Expert: +1 eighteen times, and **+2 twice** -- three
+fragments from a single rock. It also netted +0 twice, which fits the
+spawner finding no free slot; that exhaustion, plus the small sample,
+explains why the observed extra-fragment rate (2 of 22) sits under the
+nominal 1-in-4.
+
+The Novice single-fragment case is **code-derived only** -- no recording at
+difficulty 0 exists to test it.
+
+**4. Display.** Difficulty is added to a base index before a text call,
+consistent with selecting one of four level-name strings.
+
 ## What's still open
 
 Essentially everything. Named explicitly so the next session has targets
