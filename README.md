@@ -16,10 +16,26 @@ one command (below).
 
 [`docs/FINDINGS.md`](docs/FINDINGS.md) is the real deliverable: a narrative
 of what's been confirmed live in MAME, what's still just a hint, and what
-was actively distrusted and flagged rather than assumed. **This is day one
-of the project, so read it as a starting map, not a finished one** -- most
-of the ROM is currently declared as data blocks whose contents are
-explicitly not yet characterised.
+was actively distrusted, tested, and in several cases retracted rather than
+assumed. [`annotations.json`](annotations.json) is the machine-readable form
+of the same knowledge.
+
+Every byte of the ROM is classified, and both large graphics blocks are
+identified and decoded: the character/text set MARIA reads directly via
+`CHARBASE`, and the direct-mode sprite sheet holding the asteroid rotation
+frames, the ship and the explosions. Solved and live-verified on the
+gameplay side: the complete scoring table, the asteroid size and split
+cascade, both saucers and the rule that picks between them, the size-aware
+collision test, hyperspace including its re-entry death roll, spawn
+invulnerability, and everything the four difficulty levels control.
+
+The wrong turns are deliberately left next to the corrections, because
+several were the most instructive part of the work: a collision claim
+correct about one routine but wrongly generalised to the whole game, a
+"probability model" that blamed the random generator for a branch that had
+simply been read past, an inference about graphics being copied to RAM that
+the project's own documented pitfall warns against, and object "slots" that
+turned out to be reads past the end of an array.
 
 A privately-held, unlicensed historical source for this game exists (the
 same archive the sibling projects' reference sources came from), and was
@@ -65,9 +81,11 @@ python3 ../a7800-toolkit/tools/disasm.py "Asteroids (NTSC) (Atari) (1987) (DFB93
 Live findings in this project come from replaying a MAME input
 recording (a deterministic button-press log, not video, and not
 copyrighted content) against a PC/frame-tagged Lua probe -- the same
-technique the sibling projects used throughout. No recordings exist yet;
-once made, they're committed here so the findings that cite them stay
-reproducible.
+technique the sibling projects used throughout. Six recordings
+(`run-01.inp` through `run-06.inp`) are committed here and most live
+findings cite specific frames in one of them -- several were recorded to
+test a specific prediction, which is what makes the claims in
+`docs/FINDINGS.md` reproducible rather than assertions.
 
 ```
 ./"Record Session.command"        # play, Esc to stop -> next free run-NN.inp

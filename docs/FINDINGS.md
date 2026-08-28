@@ -1,8 +1,9 @@
 # Asteroids -- findings so far
 
-Day one. This document is a starting map, not a finished one: almost
-everything below is a *measurement* or an explicitly-flagged hypothesis,
-and almost nothing is yet a confirmed claim about what the game does.
+Almost everything below is a measurement or an explicitly-flagged
+hypothesis, and the two are kept distinct throughout: where something is
+read from the code but never watched running, it says so. Wrong turns and
+their corrections are left in place rather than edited away.
 
 ## The cartridge
 
@@ -23,19 +24,29 @@ One detail worth noting early: all three vectors point into a tight
 cluster around `$D000`-`$D3xx`, at the *bottom* of the code region, while
 the whole of `$C000-$CFFF` below them is untouched by the initial trace.
 
-## Day one coverage
+## Coverage
 
 Tracing from the three hardware vectors alone reaches **41.9%** of the ROM
 (6,860 of 16,384 bytes, 3,367 instructions), leaving 9,524 bytes in 15
-gaps. For comparison, the sibling projects' day-one figures from the same
+gaps. For comparison, the sibling projects' opening figures from the same
 three-vector start were higher (Ms. Pac-Man reached 52.4%), which is a
 statement about how much of this cartridge is data, not about how well the
-trace went.
+trace went -- and it held up: the two largest gaps, 8,190 bytes between
+them, are both graphics.
 
-Every gap is now declared as a data block, so `--gaps` reports none and the
-round-trip is byte-identical. **Declaring a block is not identifying it** --
-the notes on each say so explicitly, and none of the 15 has had its
-contents characterised yet.
+Every gap is declared as a data block, so `--gaps` reports none and the
+round-trip is byte-identical. **Declaring a block is not identifying it**,
+so here is the honest split of the 15 as things stand:
+
+| | |
+|---|---|
+| Identified and decoded | `dat_C000` (sprite sheet, 4,096 b), `dat_E000` (character set, 4,446 b) -- 89% of all gap bytes |
+| Identified in part | `dat_DDE0` collision extents, `dat_F4B1` difficulty caps, `dat_F896` saucer-size seeds, `dat_F9B3` spawn box, `dat_FDCE` score tables + vectors |
+| Declared, still uncharacterised | the 8 remaining small blocks (~700 bytes total) |
+
+The per-block notes in `annotations.json` say which of the three each one
+is, rather than leaving a reader to assume a declared block is an
+understood one.
 
 ## No missed code -- checked, not assumed
 
@@ -720,40 +731,39 @@ been right all along.
 
 Refreshed after several rounds of work -- a number of the day-one bullets
 here had been resolved and were left standing, which is its own kind of
-error.
+error, and worth recording as one.
 
-**Both large blocks are now identified** -- see "The `$E000` block,
-solved" and "`$C000`: the moving objects" above. What remains is their
-*internal* layout: which bytes are which sprite, and what occupies
-`$E800-$F15D` beyond the first character page.
+**Resolved since this list was first written**, each written up in full
+above: both large graphics blocks (identified *and* decoded); the real
+size-aware collision test `rom:sub_DABA`, along with the correction that
+`rom:sub_F93C` is spawn-safety only and not the gameplay hit test; the
+large-versus-small saucer rule, including its probability model and the
+`BMI` early-out that makes large unconditional at high bias; the 500-point
+award, confirmed by a competitive run recorded for it, which also located
+the two player ships at `ObjType` slots `$18` and `$20`. Every entry in the
+point-value table is now confirmed live.
 
-**Collision detection proper.** The object system, splitting and scoring
-are all mapped, but the actual collision test -- `rom:sub_F93C`, used both
-for hyperspace landing-spot validation and, presumably, for rock-vs-ship
-and shot-vs-rock -- has never been traced. Tractable, and it sits right
-next to work already done.
+**Genuinely still open:**
 
-~~**The 500-point award**~~ -- **CONFIRMED** by `run-06`, a competitive
-run recorded for it. Two +500 awards at frames 1528 and 2202 in GameMode 2,
-and at each award frame a shot slot clears while `ObjType[$20]` goes `$23`
--> `$A3` -- a player ship entering the exploding state. That also locates
-the two player ships at `ObjType` slots `$18` and `$20`. **Every entry in
-the point-value table is now confirmed live.**
-
-**Smaller, well-defined questions:**
-
+* The *internal* layout of the two graphics blocks: the exact sprite-bank
+  boundaries, and the mapping from frame index to rotation angle. The
+  blocks are decoded and render correctly; what is missing is a clean index.
+* What occupies `$E800-$F15D`, beyond the first character page.
+* Whether the ~19.5% hyperspace death roll varies by difficulty. The `#$32`
+  constant is a literal at that site and the historical reference shows the
+  same value, but a difficulty-indexed variant elsewhere is not ruled out.
+* Difficulty 2 (Advanced) has never been recorded; its behaviour is
+  interpolated from the code alone. So is most of what difficulty does at
+  the extremes -- only Novice, Intermediate and Expert were played.
+* "Things move faster on Expert" remains untested. No object-velocity
+  comparison across difficulties has been made, so this stays an
+  impression from play rather than a finding.
 * Which award index maps to which object is inferred from matching the
   manual's values, not observed directly; a probe tagging the X register at
   each score call would settle it.
-* Whether the large-versus-small saucer choice follows from
-  `SaucerPressure` or a separate rule.
-* Whether the ~19.5% hyperspace death roll varies by difficulty -- the
-  `#$32` constant is a literal at that site, but a difficulty-indexed
-  variant elsewhere has not been ruled out.
-* Difficulty 2 (Advanced) has never been recorded; its behaviour is
-  interpolated from the code alone.
-* The twelve small interleaved gaps. Two are now identified -- the
-  per-difficulty cap table and the score-value tables -- so the rest are
-  likely the same sort of thing: small parameter and jump tables.
-* "Things move faster on Expert" remains untested; no object-velocity
-  comparison across difficulties has been made.
+* Eight small interleaved gaps, roughly 700 bytes in total, remain declared
+  but uncharacterised. Five of the original set have since been identified
+  and all five were small parameter tables, so the rest are likely the same.
+* The small-saucer score threshold: this ROM reads as 20,000 from the
+  ten-thousands digit pair, while the historical reference's summary said
+  30,000. Left unreconciled rather than settled in this project's favour.

@@ -94,79 +94,79 @@
       "loc": "rom:FDCE",
       "len": 562,
       "name": "dat_FDCE",
-      "note": "Day one. CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised. Runs to the ROM's top and contains the hardware vectors at $FFFA-$FFFF (NMI $D2FC, RESET $D000, IRQ $D32B), which is why it shows as a gap in every project -- vector bytes are data, not executed code. Declared with an explicit length rather than an end address, because the tool's `end` is exclusive and $FFFF would otherwise be left unclaimed. PARTIALLY IDENTIFIED: contains the score-award point tables at $FEDC (low BCD pair) and $FEE4 (high BCD pair), 8 entries each -- see rom:DE5C. The rest of the block is still uncharacterised."
+      "note": "IDENTIFIED (partly). Holds the scoring tables plus the 6502 hardware vectors at $FFFA-$FFFF. dat_FEDC (low BCD byte) and dat_FEE4 (high BCD byte) form 8 paired score values: 100, 50, 20, 500, 1000, 200, 0, 0 -- large/medium/small asteroid, player ship (competitive), small saucer, large saucer. These are FACE VALUE, not the x10-scaled encoding used by the sibling 7800 titles; all six live values were confirmed by playing. dat_FE66 holds the per-player base colours that sub_FA5E ORs with the doubled frame counter to blink a newly-spawned ship. The rest of the block is not characterised. CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised. Runs to the ROM's top and contains the hardware vectors at $FFFA-$FFFF (NMI $D2FC, RESET $D000, IRQ $D32B), which is why it shows as a gap in every project -- vector bytes are data, not executed code. Declared with an explicit length rather than an end address, because the tool's `end` is exclusive and $FFFF would otherwise be left unclaimed. PARTIALLY IDENTIFIED: contains the score-award point tables at $FEDC (low BCD pair) and $FEE4 (high BCD pair), 8 entries each -- see rom:DE5C. The rest of the block is still uncharacterised."
     },
     {
       "loc": "rom:F763",
       "end": "rom:F7F7",
       "name": "dat_F763",
-      "note": "Day one. CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised."
+      "note": "CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised."
     },
     {
       "loc": "rom:DDE0",
       "end": "rom:DE41",
       "name": "dat_DDE0",
-      "note": "Day one. CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised."
+      "note": "IDENTIFIED (partly) as the collision-detection tables. sub_DABA indexes three of them by the LOW NIBBLE of an object's type byte and SUMS both objects' entries to get the test extent, which is why the hit box tracks asteroid size: dat_DDE9 X extents = 2,4,5,3,2,4,1,1; dat_DDF1 Y = 3,6,8,6,2,3,1,1; dat_DDF9 diagonal = 3,6,9,6,2,3,2,1. dat_DDE0 itself (17,18,18,18,19,19,19,19,1D) drives sub_DA92's inner scan bound. All three extent tables were later corroborated byte-for-byte by the historical reference. CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised."
     },
     {
       "loc": "rom:F3AA",
       "end": "rom:F407",
       "name": "dat_F3AA",
-      "note": "Day one. CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised."
+      "note": "CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised."
     },
     {
       "loc": "rom:FBD0",
       "end": "rom:FBF4",
       "name": "dat_FBD0",
-      "note": "Day one. CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised."
+      "note": "CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised."
     },
     {
       "loc": "rom:D6A5",
       "end": "rom:D6B3",
       "name": "dat_D6A5",
-      "note": "Day one. CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised."
+      "note": "CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised."
     },
     {
       "loc": "rom:F896",
       "end": "rom:F89E",
       "name": "dat_F896",
-      "note": "Day one. CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised."
+      "note": "IDENTIFIED (partly): dat_F89A = $00/$A7/$95/$8F is the per-difficulty seed for SaucerSizeBias, which decays by 6 per saucer and biases the large/small saucer choice at L_F581. While the bias is >= $80 the BMI early-out makes the saucer large unconditionally with no random draw at all -- the branch this project first missed and wrongly blamed on the PRNG. CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised."
     },
     {
       "loc": "rom:DA8B",
       "end": "rom:DA92",
       "name": "dat_DA8B",
-      "note": "Day one. CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised."
+      "note": "CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised."
     },
     {
       "loc": "rom:D2AF",
       "end": "rom:D2B5",
       "name": "dat_D2AF",
-      "note": "Day one. CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised."
+      "note": "CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised."
     },
     {
       "loc": "rom:D814",
       "end": "rom:D818",
       "name": "dat_D814",
-      "note": "Day one. CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised."
+      "note": "CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised."
     },
     {
       "loc": "rom:F4B1",
       "end": "rom:F4B5",
       "name": "dat_F4B1",
-      "note": "Day one. CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised."
+      "note": "IDENTIFIED as the per-difficulty saucer-pressure cap: $40/$60/$80/$DF for difficulty 0-3. Read at init into DifficultyCap ($84), which clamps SaucerPressure ($89) and so sets how often saucers may appear -- one of the four things difficulty controls. CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised."
     },
     {
       "loc": "rom:F9B3",
       "end": "rom:F9B5",
       "name": "dat_F9B3",
-      "note": "Day one. CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised."
+      "note": "IDENTIFIED as the two extents of the fixed spawn-safety box used by sub_F93C: dat_F9B3 = $10 (+/-16 X) and dat_F9B4 = $1A (+/-26 Y). NOTE this box is NOT the gameplay hit test -- sub_F93C has only two callers, ship respawn and hyperspace re-entry, and asks 'is this spot clear enough to materialise into'. The real size-aware collision is sub_DABA. CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised."
     },
     {
       "loc": "rom:D904",
       "end": "rom:D905",
       "name": "dat_D904",
-      "note": "Day one. CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised."
+      "note": "CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised."
     }
   ],
   "notes": {
