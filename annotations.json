@@ -35,8 +35,18 @@
     "rom:D2FC": "ENTRY_Nmi",
     "rom:D000": "ENTRY_Reset"
   },
-  "ram": {},
-  "comments": {},
+  "ram": {
+    "46": "Score",
+    "4A": "Score2",
+    "7A": "CurrentPlayer",
+    "4E": "ScoreTeam",
+    "82": "GameMode",
+    "52": "ReserveShips"
+  },
+  "comments": {
+    "rom:DE5C": "CONFIRMED LIVE -- first live-verified finding for this project. The score-award routine, found by grepping for SED (2 sites in this ROM, the same short-candidate-list technique the sibling projects used). Takes an award-type index in X and adds a packed-BCD value into the current player's score: CurrentPlayer (ram_007A) is shifted left twice to give a 4-byte stride, so player 0's score is ram_0046-ram_0049 and player 1's is ram_004A-ram_004D, most-significant byte first (8 BCD digits each). dat_FEDC supplies the low digit pair and dat_FEE4 the high pair. Decoded, the 8-entry table is: 0=100, 1=50, 2=20, 3=500, 4=1000, 5=200, 6 and 7 unused (zero) -- matching the manual's table exactly across all six documented awards (large asteroid 20, medium 50, small 100, large saucer 200, small saucer 1,000, other player's ship 500). NOTE a real divergence from the sibling projects: these values are stored at FACE VALUE, not at the x10 BCD scale independently found in both Galaga and Ms. Pac-Man. BCD $0100 here means 100 points, not 1,000. Assuming the family convention would have mis-scaled every award by a factor of ten. LIVE-VERIFIED against run-01.inp (tools/probe-score.lua), watching both players' score bytes across the whole recording: every positive delta was exactly a manual value -- +20 x23, +50 x40, +100 x66, +200 x3 -- with no unexplained amounts. The 500 and 1,000 entries are read from the table only; neither a small saucer nor a player-versus-player kill occurred in this recording, so those two are NOT yet live-confirmed.",
+    "rom:DE75": "The bonus-ship award, and the mechanism behind the shared TEAM score -- confirmed live, and prompted by the user's observation that Team mode shows a shared score at top-centre. The BCD add above carries out of ram_0048/ram_0049 (the low four digits) exactly when the score crosses a 10,000 boundary, matching the manual's 'bonus ship every 10,000 points'; the award path then increments ReserveShips (ram_0052, newly named -- a per-slot array indexed by CurrentPlayer). The gate here is the interesting part: if GameMode (ram_0082) is 1 AND CurrentPlayer is not 2, the award is skipped. CurrentPlayer therefore has a THIRD value beyond the two players, and since the score routine strides by CurrentPlayer*4, slot 2's score occupies ram_004E-ram_0051 -- ScoreTeam (newly named). LIVE-VERIFIED against run-01.inp (tools/probe-team.lua), which contains one-player, team and competitive segments: GameMode reads $FF in the one-player segment, 1 during team play and 2 during competitive play. During the team segment ScoreTeam is exactly the sum of the two individual scores, checked at two independent moments (70+20=90, and 440+370=810), while in the one-player and competitive segments it stays 0. ReserveShips for slot 2 was also seen depleting (4 down to 0) only during team play, matching the manual's 'sharing reserve ships'. So team mode keeps both individual scores AND a shared total, and routes the bonus ship to the shared pool."
+  },
   "headers": {},
   "blocks": [
     {
@@ -55,7 +65,7 @@
       "loc": "rom:FDCE",
       "len": 562,
       "name": "dat_FDCE",
-      "note": "Day one. CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised. Runs to the ROM's top and contains the hardware vectors at $FFFA-$FFFF (NMI $D2FC, RESET $D000, IRQ $D32B), which is why it shows as a gap in every project -- vector bytes are data, not executed code. Declared with an explicit length rather than an end address, because the tool's `end` is exclusive and $FFFF would otherwise be left unclaimed."
+      "note": "Day one. CONFIRMED free of missed code: every JSR/JMP byte pattern in the ROM that appeared to target inside a gap was re-checked against the addresses the disassembler actually reached as code, and all of them turned out to be byte patterns sitting inside data rather than real calls -- so no traced code branches into this range. Declared as a data block to close the gap; contents not yet characterised. Runs to the ROM's top and contains the hardware vectors at $FFFA-$FFFF (NMI $D2FC, RESET $D000, IRQ $D32B), which is why it shows as a gap in every project -- vector bytes are data, not executed code. Declared with an explicit length rather than an end address, because the tool's `end` is exclusive and $FFFF would otherwise be left unclaimed. PARTIALLY IDENTIFIED: contains the score-award point tables at $FEDC (low BCD pair) and $FEE4 (high BCD pair), 8 entries each -- see rom:DE5C. The rest of the block is still uncharacterised."
     },
     {
       "loc": "rom:F763",

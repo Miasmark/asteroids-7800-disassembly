@@ -71,7 +71,7 @@ reproducible.
 ```
 
 Manual (mechanics reference, scoring table):
-https://atariage.com/manual_html_page.php?SoftwareID=1774
+https://atariage.com/manual_html_page.php?SoftwareID=2117
 
 ## Layout
 

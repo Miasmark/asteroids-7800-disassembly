@@ -89,6 +89,54 @@ claims about its purpose:
   between traced routines, which is the usual shape of jump tables and
   per-object parameter tables rather than bulk graphics.
 
+## First live pass: the scoring table, and the shared team score
+
+`run-01.inp` (13,969 frames, length-checked against a 600,000-frame cap
+before use, per a costly lesson from a sibling project) contains three
+segments in one recording: a one-player game, a two-player *team* game,
+and a two-player *competitive* game.
+
+**The point-value table.** Grepping for `SED` found two sites, both in one
+routine at `rom:DE5C` -- the same short-candidate-list technique that
+opened up both sibling projects. It takes an award-type index in X and adds
+a packed-BCD value to the current player's score, striding by
+`CurrentPlayer`*4, so player 0's score is `ram_0046`-`ram_0049` and player
+1's is `ram_004A`-`ram_004D`. The paired tables at `dat_FEDC` (low digits)
+and `dat_FEE4` (high digits) decode to: **100, 50, 20, 500, 1000, 200**,
+with two unused zero entries -- matching all six values the manual
+documents (large asteroid 20, medium 50, small 100, large saucer 200,
+small saucer 1,000, other player's ship 500).
+
+**A real divergence from the sibling projects, worth stating plainly:**
+these values are stored at *face value*. Both Galaga and Ms. Pac-Man
+independently used a x10 BCD scale, where stored `$0100` meant 1,000
+points. Carrying that convention over here would have mis-scaled every
+award by a factor of ten. The family pattern is not a family rule.
+
+**Live-verified**, not just read off the table: watching both score byte
+ranges across the whole recording, every positive delta was exactly a
+manual value -- +20 (x23), +50 (x40), +100 (x66), +200 (x3) -- with no
+unexplained amounts. The 500 and 1,000 entries are **not** live-confirmed:
+no small saucer and no player-versus-player kill occurred in this
+recording, so those two rest on the table alone.
+
+**The shared team score.** The user noted that Team mode displays a shared
+score at top-centre. The bonus-ship code at `rom:DE75` explains it: the BCD
+carry out of the low four digits fires exactly on a 10,000-point boundary
+(matching the manual's bonus-ship rule), and the award is gated on
+`GameMode` == 1 *and* `CurrentPlayer` == 2. `CurrentPlayer` therefore takes
+a third value beyond the two players, and since the score routine strides
+by `CurrentPlayer`*4, slot 2 lands at `ram_004E`-`ram_0051`.
+
+Confirmed live across the recording's three segments: `GameMode` reads
+`$FF` in one-player, `1` in team, `2` in competitive. During team play the
+slot-2 score is exactly the **sum** of the two individual scores -- checked
+at two independent moments (70+20=90, then 440+370=810) -- and stays 0 in
+the other two modes. Slot 2's `ReserveShips` count was also seen depleting
+only during team play, matching the manual's "sharing reserve ships". So
+team mode maintains both individual scores *and* a shared total, and routes
+the bonus ship to the shared pool.
+
 ## What's still open
 
 Essentially everything. Named explicitly so the next session has targets
@@ -101,7 +149,13 @@ rather than a blank page:
 * All gameplay mechanics: scoring, the rock split/size progression, saucer
   behaviour and timing, hyperspace, thrust and inertia, extra-life
   threshold, wave progression and difficulty.
-* No recordings exist yet, so nothing here has been verified live in MAME.
-  That is the single biggest gap in this document: **every statement above
-  comes from static analysis of the bytes, and none of it has been watched
-  running.**
+* The 500-point (other player's ship) and 1,000-point (small saucer)
+  awards are read from the table but never occurred in `run-01.inp`, so
+  neither is live-confirmed.
+* Which award index maps to which object is inferred from the manual's
+  values, not observed directly -- a probe tagging the X register at each
+  call would settle it.
+* The four difficulty levels (Novice/Intermediate/Advanced/Expert), and
+  the manual's claim that Novice has no saucers and simplified splitting.
+* Everything else about gameplay: rock split behaviour, saucer timing,
+  hyperspace, thrust and inertia, wave progression.
