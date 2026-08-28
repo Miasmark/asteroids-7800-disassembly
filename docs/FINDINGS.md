@@ -262,9 +262,31 @@ object keeps its identity and gains `$80`: `$10`->`$90`, `$21`->`$A1`,
 hyperspace death path -- it is just the ship type with the exploding bit
 set, not a distinct "destroyed by hyperspace" marker.
 
-Not confirmed: the other live types seen alongside these. `$07` occupies
-eight consecutive slots, which would fit a shot pool, but that is a guess
-from the layout and has not been tested.
+### The saucer, and what the other types are
+
+Applying the same technique to `run-01`'s three `+200` awards identifies
+the rest of the object system.
+
+**The saucer is `$25`, and it lives in a dedicated slot.** All three kills
+show index `$19` going `$25` -> `$A5` -- always the same slot, not one
+drawn from the general pool. That is a *fifth* independent confirmation of
+the bit-7 destruction rule, which now holds for every type seen destroyed:
+`$10`/`$90`, `$21`/`$A1`, `$32`/`$B2`, `$23`/`$A3`, `$25`/`$A5`. Across the
+whole recording `$25` is present for only ~994 frames, so the saucer is on
+screen briefly and rarely.
+
+**The manual's small saucer never appears.** No `+1000` award occurs in
+this recording and no second saucer-like type shows up, so the 1,000-point
+small saucer's type byte remains unknown -- the score table entry for it is
+confirmed, the object is not.
+
+**`$06` is a player shot.** A `$06` slot flips to `$86` on the exact frame
+of every hit -- for asteroid kills and all three saucer kills alike -- i.e.
+the shot is consumed on impact.
+
+**Retracted:** the earlier guess that the eight `$07` slots at `$24`-`$2B`
+were the shot pool. They are present for essentially the entire recording,
+which a shot pool would not be. Their identity is open.
 
 ## What's still open
 
