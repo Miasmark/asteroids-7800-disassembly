@@ -423,32 +423,47 @@ consistent with selecting one of four level-name strings.
 
 ## What's still open
 
-Essentially everything. Named explicitly so the next session has targets
-rather than a blank page:
+Refreshed after several rounds of work -- a number of the day-one bullets
+here had been resolved and were left standing, which is its own kind of
+error.
 
-* What the `$C000-$CFFF` block actually is, given the glyph-grid layout is
-  ruled out.
-* What the large `$E000-$F15D` block is.
-* Every one of the twelve small interleaved gaps.
-* All gameplay mechanics: scoring, the rock split/size progression, saucer
-  behaviour and timing, hyperspace, thrust and inertia, extra-life
-  threshold, wave progression and difficulty.
-* The 500-point (other player's ship) and 1,000-point (small saucer)
-  awards are read from the table but never occurred in `run-01.inp`, so
-  neither is live-confirmed.
-* Which award index maps to which object is inferred from the manual's
-  values, not observed directly -- a probe tagging the X register at each
-  call would settle it.
-* Whether the ~19.5% hyperspace death roll varies with the four difficulty
-  levels -- the constant `#$32` is a literal here, but a difficulty-indexed
+**The two big unknown blocks (the largest remaining prize).** Together
+`$C000-$CFFF` (4,096 bytes) and `$E000-$F15D` (4,446 bytes) are more than
+half the ROM, and code coverage sits at 41.9% largely because of them.
+Read-tapping both across a recording shows the same shape as the sibling
+Ms. Pac-Man project: heavy reads during boot/init, and **zero** during
+play -- i.e. copied into RAM once and rendered from there.
+`$E000-$F15D` is the stronger lead: it takes ~64,000 reads for 4,446
+bytes, roughly fourteen passes, far more than a checksum sweep would
+explain, so something is actively processing it. Finding the routine that
+reads it at boot is the single highest-value thread left. (Note the
+Ms. Pac-Man lesson: the reader will likely use `LDA (zp),Y`, which is
+invisible to a scan for absolute operands.)
+
+**Collision detection proper.** The object system, splitting and scoring
+are all mapped, but the actual collision test -- `rom:sub_F93C`, used both
+for hyperspace landing-spot validation and, presumably, for rock-vs-ship
+and shot-vs-rock -- has never been traced. Tractable, and it sits right
+next to work already done.
+
+**The 500-point award** (shooting the other player's ship) is the one score
+entry still unconfirmed live; it needs a competitive two-player run where
+one player actually shoots the other.
+
+**Smaller, well-defined questions:**
+
+* Which award index maps to which object is inferred from matching the
+  manual's values, not observed directly; a probe tagging the X register at
+  each score call would settle it.
+* Whether the large-versus-small saucer choice follows from
+  `SaucerPressure` or a separate rule.
+* Whether the ~19.5% hyperspace death roll varies by difficulty -- the
+  `#$32` constant is a literal at that site, but a difficulty-indexed
   variant elsewhere has not been ruled out.
-* Whether the large-versus-small saucer choice is driven by `SaucerPressure`
-  or by a separate rule, and what that value's units actually are.
-* ~~The four difficulty levels (Novice/Intermediate/Advanced/Expert), and
-  the manual's claim that Novice has no saucers and simplified splitting~~
-  -- **PARTLY RESOLVED.** `Difficulty` (`ram_0083`) is a 0-3 value, clamped
-  by the selector, matching the manual's four levels; the "no saucers on
-  Novice" claim is confirmed directly in the ROM. The "simplified splitting"
-  claim is still untested. See "Difficulty" below.
-* Everything else about gameplay: rock split behaviour, saucer timing,
-  hyperspace, thrust and inertia, wave progression.
+* Difficulty 2 (Advanced) has never been recorded; its behaviour is
+  interpolated from the code alone.
+* The twelve small interleaved gaps. Two are now identified -- the
+  per-difficulty cap table and the score-value tables -- so the rest are
+  likely the same sort of thing: small parameter and jump tables.
+* "Things move faster on Expert" remains untested; no object-velocity
+  comparison across difficulties has been made.
