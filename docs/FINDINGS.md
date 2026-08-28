@@ -328,6 +328,45 @@ recording contains no saucers. The hyperspace conclusion is unaffected --
 the ~19.5% re-entry roll was traced through a different path and never
 depended on this byte.
 
+## Difficulty, measured against an Expert run
+
+`run-04` was recorded on Expert specifically to expose differences, with the
+observations that things move faster, saucers arrive sooner, and a small
+saucer showed up before wave 1 ended.
+
+**The difficulty byte.** Diffing zero page across runs -- looking for bytes
+constant *within* a run but different *between* runs -- left one strong
+candidate, and the code confirms it: `Difficulty` (`ram_0083`) is
+incremented with a clamp at 3 and decremented with a floor at 0, exactly the
+manual's four levels. `run-01`/`02`/`03` all read **1**; `run-04` reads
+**3**. Since the manual says Novice has no saucers and all three
+difficulty-1 runs contain saucers, 1 cannot be Novice -- so the top of the
+mapping is pinned by the user's Expert run and the bottom by that
+cross-check.
+
+**"Novice has no saucers" is confirmed in the ROM.** The saucer routine
+loads `Difficulty` and returns immediately if it is zero. No saucer is ever
+processed on Novice.
+
+**Why saucers come faster.** `Difficulty` indexes a 4-byte table reading
+`$40, $60, $80, $DF` for levels 0-3, giving `DifficultyCap`. A per-player
+accumulator, `SaucerPressure`, is added to and then **clamped to that cap**
+-- so a harder setting simply permits a larger value. That value feeds the
+saucer spawn path, which checks the saucer slot is empty before proceeding.
+Higher difficulty raises the ceiling, and saucers arrive sooner.
+
+Measured, rather than inferred:
+
+| | difficulty 1 | Expert (3) |
+|---|---|---|
+| first saucer appears | frame 2006 | **frame 1070** |
+| small saucer (`$14`) is the | 5th saucer (frame 5330) | **3rd saucer (frame 2522)** |
+
+Both match the user's account. Not established: the units of
+`SaucerPressure`, and whether the large-versus-small saucer choice follows
+from it or from a separate rule. The "things move faster" impression is
+also untested -- no object-velocity comparison has been made.
+
 ## What's still open
 
 Essentially everything. Named explicitly so the next session has targets
@@ -349,7 +388,13 @@ rather than a blank page:
 * Whether the ~19.5% hyperspace death roll varies with the four difficulty
   levels -- the constant `#$32` is a literal here, but a difficulty-indexed
   variant elsewhere has not been ruled out.
-* The four difficulty levels (Novice/Intermediate/Advanced/Expert), and
-  the manual's claim that Novice has no saucers and simplified splitting.
+* Whether the large-versus-small saucer choice is driven by `SaucerPressure`
+  or by a separate rule, and what that value's units actually are.
+* ~~The four difficulty levels (Novice/Intermediate/Advanced/Expert), and
+  the manual's claim that Novice has no saucers and simplified splitting~~
+  -- **PARTLY RESOLVED.** `Difficulty` (`ram_0083`) is a 0-3 value, clamped
+  by the selector, matching the manual's four levels; the "no saucers on
+  Novice" claim is confirmed directly in the ROM. The "simplified splitting"
+  claim is still untested. See "Difficulty" below.
 * Everything else about gameplay: rock split behaviour, saucer timing,
   hyperspace, thrust and inertia, wave progression.
