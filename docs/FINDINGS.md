@@ -173,6 +173,38 @@ press-to-jump ratio, but **the reported random death is not reproduced**,
 and what `ram_00A5` actually represents is still open. What would settle
 it is a recording that contains an actual hyperspace death.
 
+### run-02: the death captured, and two of my readings corrected
+
+The user then recorded exactly that -- asteroids mostly cleared, teleport
+pressed repeatedly, deaths only from teleport. It settles most of this.
+
+**The deaths come through the hyperspace path, not a collision.** Write-
+tapping the reserve-ship counts shows both losses written from `PC=$D7BC`,
+inside this state machine. That confirms the user's "no collision"
+observation from the code side rather than from watching the screen.
+
+**The sequence.** A jump runs three phases on `ShipSpecialState`, with
+`ShipPhaseTimer` counting down one step per two frames: phase 2 (timer
+`$2C`, leaving), phase 3 (timer `$DE`, in hyperspace), then phase 1 (timer
+`$2C` again, re-entry). The survival check fires when the timer reaches
+`$29` **during phase 1**.
+
+**A trap that had fooled the previous probe.** The timer passes through
+`$29` in *both* phase 2 and phase 1 -- six frames after the jump, and again
+~170 frames later. Only the phase-1 occurrence is the re-entry check.
+Reading the phase-2 one gave a clean, confident, meaningless number.
+
+**And a retraction.** `ram_00A5` is not the "you die" flag. Across run-02
+it reads `$FF` at every checkpoint, on surviving and fatal jumps alike, so
+it cannot be what decides. The earlier reading was wrong.
+
+**What actually separates them is timing.** Both fatal jumps died exactly
+**172 frames** after the jump; every survived jump completed its whole
+cycle in about **110 frames**. So the fatal ones are the jumps where phase
+3 *ran long*. What ends phase 3 early versus letting it run on is the
+remaining open question -- and it is now a sharp one, with a known
+signature to look for.
+
 ## What's still open
 
 Essentially everything. Named explicitly so the next session has targets
