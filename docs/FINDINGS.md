@@ -421,24 +421,51 @@ interpolated from the code alone.
 **4. Display.** Difficulty is added to a base index before a text call,
 consistent with selecting one of four level-name strings.
 
+## The `$E000` block, solved: MARIA reads it straight from ROM
+
+The largest unknown block, 4,446 bytes and 27% of the ROM, is MARIA
+character/graphics data -- and the route in was a single instruction.
+
+Scanning for a page constant in the block's range followed by a zero-page
+store turned up `rom:F506`: **`LDA #$E0 ; STA $34`**, and `$34` is
+`CHARBASE`. Write-tapping the MARIA registers across a recording confirms
+it is written exactly once, at init, and never changed. So MARIA's indirect
+character mode fetches glyph data from `$E000+` **in place, straight from
+the cartridge** -- unlike the sibling Ms. Pac-Man project, where `CHARBASE`
+pointed into RAM and the tile set was copied there at boot.
+
+Rendering the block as an 8-line character set produces plainly readable
+text: the digits, `PLAYER`, `GAME OVER`, `NOVICE` / `INTERMEDIATE` /
+`ADVANCED` / `EXPERT`, `ONE PLAYER`, `TWO PLAYERS`, `TEAM PLAY`,
+`COMPETITION PLAY`, and `COPYRIGHT ATARI 1984`.
+
+That independently corroborates two things previously established from code
+alone: the **four difficulty names** behind `Difficulty`'s 0-3 range, and
+the **three game modes** behind `GameMode`. Both were inferred from branch
+structure and manual cross-checks; here they are, spelled out in the ROM's
+own artwork.
+
+**A correction.** One commit earlier I recorded that read-tapping showed
+zero CPU reads of this block during play, and wrote that up as "copied into
+RAM once and rendered from there". That was wrong -- the block is never
+copied. The tap simply cannot see MARIA's DMA, which is precisely the trap
+the toolkit's own pitfalls document after the sibling project hit it. I
+had the lesson written down and still drew the inference it warns against.
+
+Still open within the block: its internal layout, particularly what
+occupies `$E800-$F15D` beyond the first character page, and whether the
+asteroid and ship shapes live here or in `dat_C000`.
+
 ## What's still open
 
 Refreshed after several rounds of work -- a number of the day-one bullets
 here had been resolved and were left standing, which is its own kind of
 error.
 
-**The two big unknown blocks (the largest remaining prize).** Together
-`$C000-$CFFF` (4,096 bytes) and `$E000-$F15D` (4,446 bytes) are more than
-half the ROM, and code coverage sits at 41.9% largely because of them.
-Read-tapping both across a recording shows the same shape as the sibling
-Ms. Pac-Man project: heavy reads during boot/init, and **zero** during
-play -- i.e. copied into RAM once and rendered from there.
-`$E000-$F15D` is the stronger lead: it takes ~64,000 reads for 4,446
-bytes, roughly fourteen passes, far more than a checksum sweep would
-explain, so something is actively processing it. Finding the routine that
-reads it at boot is the single highest-value thread left. (Note the
-Ms. Pac-Man lesson: the reader will likely use `LDA (zp),Y`, which is
-invisible to a scan for absolute operands.)
+**`$C000-$CFFF` (4,096 bytes) is the remaining unknown block.** Its
+sibling `$E000-$F15D` is now identified -- see "The `$E000` block, solved"
+above. `$C000` still resists: it is not CHARBASE-addressed, the glyph-grid
+layout was ruled out on day one, and nothing else has placed it yet.
 
 **Collision detection proper.** The object system, splitting and scoring
 are all mapped, but the actual collision test -- `rom:sub_F93C`, used both
