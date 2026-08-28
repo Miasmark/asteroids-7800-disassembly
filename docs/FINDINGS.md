@@ -663,6 +663,59 @@ re-entry roll. One byte carries the whole "ship is not in normal play"
 concept, and collision, rendering and the hyperspace state machine all read
 it.
 
+## Cross-checking against the historical reference
+
+With the investigation substantially complete, a privately-held historical
+development source for this game was consulted -- under the same discipline
+the sibling projects settled on: as a *check only*, never as the origin of a
+finding, never quoted or copied into this repo, and with every point
+re-verified against this ROM's own bytes. Development source is not
+necessarily the shipped product, so a disagreement is a question to settle
+against the ROM rather than an automatic correction.
+
+**Corroborated exactly.** The collision work matches in full, including the
+part that was initially wrong here and got corrected. The reference has the
+same coarse rejection thresholds of 10 and 14 (with its own comment noting
+the furthest possible collision distances), the same three per-type extent
+tables, and the same summing of both objects' extents indexed by the low
+nibble of the type byte. The three tables match the values decoded here
+**byte for byte** across all eight entries each. It also carries the
+ship-state collision guard -- with a comment to the effect that a ship in a
+non-normal state should not collide -- which is exactly the spawn
+invulnerability found here.
+
+The saucer work matches too, in all three parts: the score-threshold branch
+to the small saucer, the difficulty-zero early return that suppresses
+saucers entirely on Novice, and -- notably -- **the branch-if-negative
+early-out on the bias variable that makes the large saucer unconditional
+before any random draw**. That last one is the branch this project first
+missed, wrongly blamed on the random generator, and only found by measuring
+the generator and going back to re-read. The reference confirms it is real.
+
+Hyperspace matches down to the constant. The reference draws a random value
+and compares it against **50**, exactly the `$32` found here, under a
+comment about sometimes letting the ship explode -- so the ~19.5% re-entry
+death is confirmed. It also confirms the landing spot is chosen randomly and
+retried until a safety check passes, and its name for that safety routine
+reinforces the scoping correction made here: it is a spawn-safety test, not
+the gameplay collision. And the blink is confirmed as the frame counter
+driving the ship's colour during the post-spawn state.
+
+**One unreconciled point, and it is small.** The summarised reading of the
+reference put the small-saucer score threshold at 30,000 points; the reading
+here is 20,000, from the comparison against the score's ten-thousands digit
+pair. That byte position was checked live -- it stayed zero while the score
+sat at 2,560 -- so 20,000 is what this ROM does. The likeliest explanation
+is arithmetic in the summary rather than a real difference, but it is
+recorded rather than quietly resolved in this project's favour.
+
+**A standing caution, carried from a sibling project.** This reference is
+read through a summarising layer, not directly. An apparent disagreement is
+at least as likely to be summary error as a genuine difference in the
+source -- which is exactly what happened once before, where querying the
+specific code rather than accepting the summary showed the ROM reading had
+been right all along.
+
 ## What's still open
 
 Refreshed after several rounds of work -- a number of the day-one bullets

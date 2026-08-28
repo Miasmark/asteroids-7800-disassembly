@@ -21,11 +21,15 @@ of the project, so read it as a starting map, not a finished one** -- most
 of the ROM is currently declared as data blocks whose contents are
 explicitly not yet characterised.
 
-A privately-held, unlicensed historical source for this game may exist (the
-sibling projects' reference sources came from such an archive), and if so it
-will be handled the way those projects settled on: held off until the
-independent work is substantially complete, then used strictly as a check --
-never as the origin of a finding, never quoted or copied in.
+A privately-held, unlicensed historical source for this game exists (the
+same archive the sibling projects' reference sources came from), and was
+handled the way those projects settled on: held off until the independent
+work was substantially complete, then used strictly as a check -- never as
+the origin of a finding, never quoted or copied in. That cross-check has now
+been done and is written up in `docs/FINDINGS.md`: broad corroboration
+including a byte-for-byte match on the collision extent tables and an exact
+match on the hyperspace death constant, plus one small unreconciled numeric
+point left open rather than resolved in this project's favour.
 
 Working discipline, same as the sibling projects: every claim about what a
 byte range does should be checked live before it's trusted, not just
