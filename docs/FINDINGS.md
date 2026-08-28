@@ -235,6 +235,37 @@ unremarkable at that sample size -- and notably, their instinct that the
 deaths had nothing to do with collisions was exactly right, for a more
 interesting reason than landing on a rock.
 
+## Asteroids: sizes, splitting, and the object array
+
+Decoded by watching the object array across scoring events rather than by
+reading the collision code -- faster, and it produces evidence rather than
+inference.
+
+`ObjType` (`ram_008C`) is a per-object type array of roughly `$2C` slots,
+with `$FF` for an empty slot. Dumping it either side of six scoring events
+in `run-01` gives the whole asteroid system:
+
+| Type | Size | Points | On destruction |
+|---|---|---|---|
+| `$32` | large | 20 | becomes **two** `$21` |
+| `$21` | medium | 50 | becomes **two** `$10` |
+| `$10` | small | 100 | nothing spawned |
+
+The points are inverse to size, exactly as the manual states, and the
+split cascade is the classic one. Observed directly and more than once:
+large at frames 1414 and 1956, medium at 1424, small at 1476 and 1570.
+
+**Bit 7 marks destruction rather than being a separate type.** A destroyed
+object keeps its identity and gains `$80`: `$10`->`$90`, `$21`->`$A1`,
+`$32`->`$B2`, and the player ship `$23`->`$A3`. The slot then clears to
+`$FF` shortly after. That incidentally explains the `$A3` written by the
+hyperspace death path -- it is just the ship type with the exploding bit
+set, not a distinct "destroyed by hyperspace" marker.
+
+Not confirmed: the other live types seen alongside these. `$07` occupies
+eight consecutive slots, which would fit a shot pool, but that is a guess
+from the layout and has not been tested.
+
 ## What's still open
 
 Essentially everything. Named explicitly so the next session has targets
