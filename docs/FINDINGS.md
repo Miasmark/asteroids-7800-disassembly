@@ -630,6 +630,39 @@ So "small saucers arrive sooner on Expert" is not a tendency at all. It is
 an arithmetic consequence of the lower seed, and the earlier six-in-a-row
 that looked improbable was simply not random.
 
+## Spawn invulnerability, and why the ship blinks
+
+The user asked about spawn invulnerability and noted the ship blinks while
+it is active. Both halves turn out to be the *same flag*, which is why the
+blink is a reliable indicator rather than a coincidence.
+
+**The invulnerability** is two guards in the ship-collision resolution, at
+`rom:DB9E` and `rom:L_DBA5`. Both are `LDA ShipSpecialState / BNE`,
+branching straight to the "next pair" path whenever the state is non-zero.
+So while a ship is in any special state, no collision is registered against
+it at all. That covers the materialising window after a spawn or a death,
+and also the entire hyperspace sequence -- consistent, since a ship
+mid-warp is not on the playfield to be hit.
+
+**The blink** is the visible half of the same flag. The
+`ShipSpecialState == 1` handler at `rom:L_D717` takes the frame counter,
+doubles it, and passes it to `rom:sub_FA5E`, which masks it to a nibble,
+ORs in the player's base colour and writes the ship's two colour registers
+-- the same pair the spawn code initialises with fixed values. Driving them
+from the frame counter cycles the colour every frame. That is the blink.
+
+**Measured** in `run-01` across the respawn at frame 1898:
+`ShipSpecialState` reads 1 from frame 1898 to 1926 while the phase timer
+counts `$29` down to `$1B` at one step per two frames -- about **28 frames,
+roughly half a second** of flashing invulnerability before the state
+returns to 0.
+
+Worth noting how the pieces fit: this is the third distinct job for
+`ShipSpecialState`, alongside sequencing hyperspace and gating the
+re-entry roll. One byte carries the whole "ship is not in normal play"
+concept, and collision, rendering and the hyperspace state machine all read
+it.
+
 ## What's still open
 
 Refreshed after several rounds of work -- a number of the day-one bullets
