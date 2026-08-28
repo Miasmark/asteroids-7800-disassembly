@@ -137,6 +137,42 @@ only during team play, matching the manual's "sharing reserve ships". So
 team mode maintains both individual scores *and* a shared total, and routes
 the bonus ship to the shared pool.
 
+## Hyperspace: the mechanism found, the reported death not reproduced
+
+The user reported spending most of the two-player modes spamming the
+"emergency teleport", and that it *sometimes* kills the ship with no
+collision. That is the classic arcade Asteroids hyperspace risk, and the
+manual doesn't mention it -- so it would be a real manual-vs-ROM
+divergence if confirmed. It isn't confirmed yet.
+
+**What is solid.** The 7800 pad has two buttons, read by `rom:sub_D66A`
+into `Button1`/`Button2` per player. Across the recording player 1 pressed
+Button1 503 times and Button2 46 -- fire versus a situational action -- and
+Button2 is what triggers `rom:sub_D540`, hyperspace. That routine is
+deliberately **rate-limited**: it returns immediately if the ship is
+already in a special state, so mashing the button cannot re-trigger it
+mid-jump. Measured: **73 button presses produced only 12 actual jumps**,
+which fits "spamming" exactly. A real trigger sets the phase timer to
+`$2C`; the timer counts *down*, and the state machine tests it at `$29` --
+three steps later -- which is the re-entry checkpoint where `ram_00A5`
+decides whether the ship survives.
+
+**Where it stalls, and an honest contradiction.** A negative `ram_00A5` at
+that checkpoint branches toward the ship-loss code, so it reads like a
+"you die" flag. At the 12 jumps in this recording it was negative **11
+times**. But a second probe, watching the reserve-ship counts directly,
+found that **none of those 12 jumps cost a ship** within 40 frames. Both
+numbers come from the same recording, so one of my readings is wrong:
+a negative `ram_00A5` plainly does not by itself mean death. The gates
+below it are the likely explanation -- one state value skips the loss
+outright, and in team mode another byte can skip it or redirect the loss
+to the shared slot -- but which one fired here is not established.
+
+So: the hyperspace *mechanism* is found and the rate-limiting explains the
+press-to-jump ratio, but **the reported random death is not reproduced**,
+and what `ram_00A5` actually represents is still open. What would settle
+it is a recording that contains an actual hyperspace death.
+
 ## What's still open
 
 Essentially everything. Named explicitly so the next session has targets
