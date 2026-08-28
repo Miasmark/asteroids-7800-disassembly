@@ -275,10 +275,30 @@ the bit-7 destruction rule, which now holds for every type seen destroyed:
 whole recording `$25` is present for only ~994 frames, so the saucer is on
 screen briefly and rarely.
 
-**The manual's small saucer never appears.** No `+1000` award occurs in
-this recording and no second saucer-like type shows up, so the 1,000-point
-small saucer's type byte remains unknown -- the score table entry for it is
-confirmed, the object is not.
+**The small saucer is `$14`** -- resolved by `run-03`, which the user
+recorded specifically to capture it. It uses the *same* dedicated slot
+`$19` as the large saucer, so that slot is simply "the saucer" and the type
+byte distinguishes large (`$25`, 200 points) from small (`$14`, 1,000
+points). Both match the manual. `$14` -> `$94` on destruction: a sixth
+confirmation of the bit-7 rule.
+
+**And that run isolated something the earlier ones could not.** It contains
+two small saucers, and the user let them die differently on purpose:
+
+| Frames | Fate | Award |
+|---|---|---|
+| 5330-5392 | flew into an asteroid, destroyed itself | **none** |
+| 5922-6142 | shot by the player | **+1000** |
+
+Both show the identical `$14` -> `$94` transition. So **destruction and
+scoring are separate**: the slot explodes either way, and the award is
+gated on the player having caused it. That is worth carrying forward --
+an object-type transition alone is *not* evidence of a scoring event, and
+any future probe built on this array shouldn't treat it as one.
+
+Not measured: `run-03` shows four large saucers first (frames 2538-4808)
+and only then the two small ones, consistent with small saucers arriving
+later in a game -- but that is one run, and no threshold has been tested.
 
 **`$06` is a player shot.** A `$06` slot flips to `$86` on the exact frame
 of every hit -- for asteroid kills and all three saucer kills alike -- i.e.
