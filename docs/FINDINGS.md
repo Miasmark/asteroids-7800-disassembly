@@ -518,6 +518,53 @@ from the cartridge's copyrighted artwork, which this repo does not
 redistribute -- but they are reproducible from the ROM with the toolkit's
 `gfx.py` using the widths and line counts recorded here.
 
+## Collision detection, and the saucer size rule
+
+**Collision** is `rom:sub_F93C` -- the routine already met as the hyperspace
+landing-spot validator. Given an object index it answers "does this overlap
+any other live object?", returning the other object's index on a hit and a
+zero result when clear.
+
+It is an axis-aligned bounding-box test, and most of its arithmetic exists
+to handle **screen wraparound**. It builds a box of **+/-16 horizontally and
++/-26 vertically** around the subject, wrapped against the playfield
+dimensions (159 across, 191 down), recording a wrap flag per axis when the
+box straddles an edge. Then it walks the object slots, skipping any whose
+type is negative -- bit 7 set, already exploding, the same convention the
+object system uses -- and skipping itself. The per-axis test folds two
+comparisons into one bit, EORs it with the wrap flag so the sense inverts
+when the box crosses an edge, and rotates the answer into carry.
+
+One consequence worth stating: **the box half-extents are constants**, so
+the hitbox does *not* scale with asteroid size. A large rock and a small one
+present the same collision area.
+
+**Saucer size** is decided at `rom:L_F581`, by two independent paths:
+
+1. **A score threshold.** `ram_0047` is the ten-thousands digit pair of the
+   packed-BCD score; once it reaches 2 the small saucer is chosen
+   unconditionally. From **20,000 points on, every saucer is small.**
+2. **Below that, a weighted random draw.** The PRNG is compared against
+   `SaucerSizeBias` halved; large only if half the bias is at least the
+   random value. The bias is seeded per difficulty (`$00`/`$A7`/`$95`/`$8F`
+   for levels 0-3) and decays as saucers appear, so large saucers get
+   steadily less likely through a game.
+
+The seed being *lower* on harder settings explains the measured behaviour
+from earlier: small saucers arrive sooner on Expert (third saucer) than at
+difficulty 1 (fifth).
+
+Measured across `run-03`'s eight saucers: the score path never fired -- the
+score only reached 2,560 -- while the bias decayed monotonically from `$A1`
+to `$77`, six per saucer, and the last two spawns came up small.
+
+**An honest caveat.** The branch structure is read directly and is not in
+doubt, but six consecutive *large* outcomes at a nominal ~31%-and-falling
+probability is improbable under a uniform generator. So either the PRNG's
+output is not uniform in this context, or something further conditions the
+draw. The direction of the effect and the decaying threshold are
+established; **the exact probability model is not.**
+
 ## What's still open
 
 Refreshed after several rounds of work -- a number of the day-one bullets
