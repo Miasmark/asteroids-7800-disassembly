@@ -484,11 +484,39 @@ The pointers are computed into a RAM display list every frame and the data
 fetched by MARIA DMA -- which is precisely why no 6502 instruction ever
 names these addresses, and why a CPU read tap sees nothing during play.
 
-**Not decoded: the internal layout.** MARIA direct mode is page-strided --
-an object's rows sit one per page -- so recovering individual sprites needs
-each display-list entry's *own* width and line count, not the zone height.
-Renders at guessed extents produced fragments rather than recognisable
-shapes, and are not being presented as identifications.
+### Decoded: the sprite sheet
+
+Sampling the display list live across a recording gives each entry's *own*
+width and line count, which is what the earlier guessed extents lacked. With
+those, the block resolves cleanly.
+
+It is a **page-strided direct-mode sprite sheet**: a 16-page by 256-byte
+grid where each sprite occupies `width` consecutive columns across all 16
+pages -- one row per page -- read with MARIA's offset counting down.
+Sprites are packed contiguously at a stride equal to their width, and the
+sheet is organised into banks by width. Live sampling finds 490 distinct
+width-3 addresses, 720 width-2 and 270 width-1, essentially all at
+stride = width, which confirms the packing.
+
+Rendered at those real parameters, the artwork comes out:
+
+| Bank | Width | Contents |
+|---|---|---|
+| from `$C000` | 3 (12px) | ~36 rotation frames of the **large asteroid**, then its explosion sequence |
+| from `$C07B` | 2 (8px) | ~24 rotation frames of the **medium asteroid**, explosion frames, then the **player ship** through its rotation angles |
+| from `$C0ED` | 1 (4px) | **small asteroid** frames and debris |
+
+That lines up exactly with the object system decoded earlier -- three
+asteroid sizes (`$32`/`$21`/`$10`), each animated by rotation, plus ship and
+explosions.
+
+Not established: exact bank boundaries and frame counts, and which frame
+index maps to which rotation angle.
+
+The rendered sheets are deliberately **not committed** -- they are derived
+from the cartridge's copyrighted artwork, which this repo does not
+redistribute -- but they are reproducible from the ROM with the toolkit's
+`gfx.py` using the widths and line counts recorded here.
 
 ## What's still open
 
